@@ -5,7 +5,7 @@ use std::cmp;
 
 fn main() -> Result<(), &'static str>{
 
-    let result = day_two_part_one();
+    let result = day_two_part_two();
     match result {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
@@ -189,3 +189,62 @@ fn day_two_part_one() -> Result<String, String> {
     
     return Ok(format!("{keys:?}"));
 }
+
+fn day_two_part_two() -> Result<String, String> {
+    let file:io::Result<File> = File::open("puzzle-input/Day2");
+    let mut contents = String::new();
+    match file {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    let lines = contents.lines();
+
+    let mut keys:Vec<char> = Vec::new();
+
+    let keypad:Vec<Vec<char>> = vec![vec!['!','!','5','!','!'],vec!['!','2','6','A','!'],vec!['1','3','7','B','D'],vec!['!','4','8','C','!'],vec!['!','!','9','!','!']];
+
+    fn get_key(v:&Vec<Vec<char>>,x:usize,y:usize) -> char {
+	match v.get(x) {
+	    Some(v2) => {
+		match v2.get(y) {
+		    Some(val) => *val,
+		    None => '!'
+		}
+	    },
+	    None => '!'
+	}
+    }
+
+    
+    let mut x:i32 = -2;
+    let mut y:i32 = 0;
+
+    let mut old_x:i32;
+    let mut old_y:i32;
+    
+    for l in lines {
+	
+	for c in l.chars() {
+	    old_x = x;
+	    old_y = y;
+	    match c {
+		'U' => y = y - 1,
+		'D' => y = y + 1,
+		'L' => x = x - 1,
+		'R' => x = x + 1,
+		_   => (),
+	    }
+	    if x.abs() + y.abs() > 2 {
+		x = old_x;
+		y = old_y;
+	    }
+//	    println!("x: {x}, max x or 2: {m}, y:{y}");
+	}
+//	println!("push {x}{y}");
+	keys.push(get_key(&keypad, (x+2) as usize, (y+2) as usize));
+    }
+    let keys = keys.iter().cloned().collect::<String>();
+    return Ok(keys);
+}
+
