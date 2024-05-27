@@ -1,10 +1,11 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io;
+use std::cmp;
 
 fn main() -> Result<(), &'static str>{
 
-    let result = day_one_part_two();
+    let result = day_two_part_one();
     match result {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
@@ -16,16 +17,12 @@ fn day_one_part_one() -> Result<String, String> {
     let file:io::Result<File> = File::open("puzzle-input/Day1");
     let mut contents = String::new();
 
-    if let Ok(mut f) = file {
-	let _ = f.read_to_string(&mut contents);
-    } else if let Err(file_error) = file{
-	let mut error:String = String::from("Error with file opening");
-	error.push_str(&(file_error.to_string()));
-	return Err(error);
-    }
-    
-//	Ok(f) => f.read_to_string(&mut contents)
-    //	Err(e) => contents.replace_range(.., "")    
+    match file {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }  
+
+
     let directions = contents.split(", ").collect::<Vec<&str>>();
 
     let mut x:i32 = 0;
@@ -69,13 +66,11 @@ fn day_one_part_two() -> Result<String, String> {
     let file:io::Result<File> = File::open("puzzle-input/Day1");
     let mut contents = String::new();
 
-    if let Ok(mut f) = file {
-	let _ = f.read_to_string(&mut contents);
-    } else if let Err(file_error) = file{
-	let mut error:String = String::from("Error with file opening");
-	error.push_str(&(file_error.to_string()));
-	return Err(error);
-    }
+    match file {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }  
+
     
 //	Ok(f) => f.read_to_string(&mut contents)
     //	Err(e) => contents.replace_range(.., "")
@@ -136,4 +131,61 @@ fn day_one_part_two() -> Result<String, String> {
 	
     }
     Err("position not found".to_string())
+}
+
+fn day_two_part_one() -> Result<String, String> {
+    let file:io::Result<File> = File::open("puzzle-input/Day2");
+    let mut contents = String::new();
+    match file {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    let lines = contents.lines();
+
+    let mut keys:Vec<i32> = Vec::new();
+
+    let keypad:Vec<Vec<i32>> = vec![vec![1,4,7],vec![2,5,8],vec![3,6,9]];
+
+    fn get_key(v:&Vec<Vec<i32>>,x:usize,y:usize) -> i32 {
+	match v.get(x) {
+	    Some(v2) => {
+		match v2.get(y) {
+		    Some(val) => *val,
+		    None => -1
+		}
+	    },
+	    None => -1
+	}
+    }
+
+    
+    let mut x:usize = 1;
+    let mut y:usize = 1;
+    for l in lines {
+	
+	for c in l.chars() {
+	    match c {
+		'U' => {
+		    if y != 0 {
+			y = y - 1;
+		    }
+		},
+		'D' => y = cmp::min(y + 1,2),
+		'L' => {
+		    if x != 0 {
+			x = x - 1
+		    }
+		},
+		'R' => x = cmp::min(x + 1,2),
+		_   => (),
+
+	    }
+//	    println!("x: {x}, max x or 2: {m}, y:{y}");
+	}
+//	println!("push {x}{y}");
+	keys.push(get_key(&keypad, x, y));
+    }
+    
+    return Ok(format!("{keys:?}"));
 }
