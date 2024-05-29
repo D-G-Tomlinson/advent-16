@@ -4,7 +4,7 @@ use std::io;
 use std::cmp;
 
 fn main() -> Result<(), &'static str>{
-    match day_three_part_one() {
+    match day_three_part_two() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -283,5 +283,46 @@ fn day_three_part_one() -> Result<String, String> {
 	    valid = valid + 1;
 	}
     }
+    return Ok(valid.to_string());
+}
+fn day_three_part_two() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day3") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    let contents:Vec<Vec<i32>> = contents.lines().map(|l| l.split_whitespace().map(|x| x.parse().unwrap()).collect()).collect();
+    let num_triples = contents.len()/3;
+
+    let mut triples:Vec<Vec<i32>> = Vec::new();
+
+    for i in 0..3 {
+	for j in 0..num_triples {
+	    let start = j * 3;
+	    triples.push(
+		vec![
+		    *contents.get(start).unwrap().get(i).unwrap(),
+		    *contents.get(start + 1).unwrap().get(i).unwrap(),
+		    *contents.get(start + 2).unwrap().get(i).unwrap()
+		]
+	    );
+	}
+    }
+
+    let mut valid = 0;
+    let length = triples.len();
+  //  println!("Num triangles to check is: {length}");
+    for triplet in triples {
+//	println!("Checking triplet: {triplet:?}");
+	let v1 = *triplet.get(0).unwrap();
+	let v2 = *triplet.get(1).unwrap();
+	let v3 = *triplet.get(2).unwrap();
+
+	if (v1 < v2 + v3) && (v2 < v1 + v3) && (v3 < v1 + v2) {
+	    valid = valid + 1;
+	}
+    }
+    
     return Ok(valid.to_string());
 }
