@@ -4,9 +4,7 @@ use std::io;
 use std::cmp;
 
 fn main() -> Result<(), &'static str>{
-
-    let result = day_two_part_two();
-    match result {
+    match day_three_part_one() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -248,3 +246,42 @@ fn day_two_part_two() -> Result<String, String> {
     return Ok(keys);
 }
 
+fn day_three_part_one() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day3") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+    
+    let mut valid:i32 = 0; 
+    
+    for l in contents.lines() {
+	let numbers:Vec<i32> = l.split_whitespace().map(|x| x.parse().unwrap()).collect();
+
+	let v1:i32;
+	let v2:i32;
+	let v3:i32;
+	
+	match numbers.get(0) {
+	    Some(x) => v1 = *x,
+	    None    => v1 = -100
+	}
+
+	match numbers.get(1) {
+	    Some(x) => v2 = *x,
+	    None    => v2 = -100
+	}
+
+	match numbers.get(2) {
+	    Some(x) => v3 = *x,
+	    None    => v3 = -100
+	}
+
+//	println!("v1: {v1}, v2: {v2}, v3: {v3}");
+	
+	if (v1 < v2 + v3) && (v2 < v1+v3) && (v3 < v1 + v2) {
+	    valid = valid + 1;
+	}
+    }
+    return Ok(valid.to_string());
+}
