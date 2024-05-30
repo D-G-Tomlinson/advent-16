@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_four_part_one() {
+    match day_four_part_two() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -359,7 +359,7 @@ fn day_four_part_one() -> Result<String, String> {
 	
 	counting_vector.sort_by(my_compare);
 //	print!("{counting_vector:?}, ");
-	let counting_vector = counting_vector.into_iter().map(|(a, b)| *a).collect::<Vec<char>>();
+	let counting_vector = counting_vector.into_iter().map(|(a, _)| *a).collect::<Vec<char>>();
 
 	if counting_vector.len() >= 5 {
 	    let mut valid = true;
@@ -377,4 +377,87 @@ fn day_four_part_one() -> Result<String, String> {
     }
 
     return Ok(format!("{sum}"));
+}
+
+fn day_four_part_two() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day4") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    fn get_true_name(encrypted_name:String, sector_id:i32) -> String {
+	let shift = sector_id % 26;
+	fn shift_char(c:char, shift:i32) -> char {
+	    if c == '-' {
+		return ' ';
+	    } else {
+		
+		return char::from_u32(((((c as u32) + (shift as u32) - ('a' as u32))) % 26) + ('a' as u32)).unwrap();  
+	    }
+	}
+	return encrypted_name.chars().map(|c| shift_char(c,shift)).collect::<String>();
+    }
+
+//    let name = get_true_name("qzmt-zixmtkozy-ivhz".to_string(),343);
+//    println!("{name}");
+//    return Err("Uh oh".to_string());
+    
+    for line in contents.lines() {
+	//	let l:String = line.chars().filter(|c| (*c != '-') && (*c != ']')).collect::<String>();
+	let l:String = line.to_string();
+	
+	let mut parts = l.split("[");
+	
+
+	let mut encrypted_name:Vec<String> = parts.next().unwrap().split("-").map(|s| s.to_string()).collect();
+
+	let sector_id:i32 = encrypted_name.pop().expect("read sector id").parse().unwrap();
+
+	let original_encrypted_name:String = encrypted_name.join("-");
+	let encrypted_name = original_encrypted_name.chars().filter(|c| (*c != '-')).collect::<String>();
+	
+	let checksum:Vec<char> = parts.next().unwrap().chars().collect();
+
+	let mut dict:HashMap<char, i32> = HashMap::new();
+
+	for c in encrypted_name.chars() {
+	    *dict.entry(c).or_insert(0) +=1;	
+	}
+
+	let mut counting_vector:Vec<_> = dict.iter().map(|(a,b)| (a, b)).collect();
+
+	fn my_compare((c1,v1):&(&char, &i32),(c2,v2):&(&char,&i32) ) -> Ordering {
+	    match v1.cmp(v2) {
+		Ordering::Greater => Ordering::Less,
+		Ordering::Less => Ordering::Greater,
+		Ordering::Equal => c1.cmp(c2)		    
+	    }
+	}
+	
+	counting_vector.sort_by(my_compare);
+	//	print!("{counting_vector:?}, ");
+	
+	let counting_vector = counting_vector.into_iter().map(|(a, _)| *a).collect::<Vec<char>>();
+
+	if counting_vector.len() >= 5 {
+	    let mut valid = true;
+	    for i in 0..5 {
+		if counting_vector[i] != checksum[i] {
+		    valid = false;
+		}
+	    }
+	    if valid {
+		let true_name = get_true_name(original_encrypted_name, sector_id);
+		println!("{true_name}: {sector_id}")
+	    }	    
+	}
+	
+//        println!("{counting_vector:?}");
+    }
+
+    return Ok(format!("Done"));
+
+    
+    
 }
