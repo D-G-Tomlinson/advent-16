@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_four_part_two() {
+    match day_five_part_one() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -460,4 +460,38 @@ fn day_four_part_two() -> Result<String, String> {
 
     
     
+}
+
+fn day_five_part_one() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day5") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    fn index_to_first_six_hash(input:String) -> String {
+	let input = input.as_bytes();
+	let out = format!("{:x}",md5::compute(input));
+	let out = (&out[..6]).to_string();
+	return out;
+    }
+
+    let mut i = 0;
+    let mut should_loop = true;
+    let contents = contents;
+    let mut password:String = String::new();
+    
+    while should_loop {
+	let mut index = contents.clone();
+	index.push_str(&i.to_string());
+	let result = index_to_first_six_hash(index);
+	if &result[..5] == "00000" {
+	    password.push(result.chars().nth(5).unwrap());
+	    println!("{}",password);
+	    should_loop = password.len()<8;			  
+	}
+	i = i + 1;
+    }
+    
+    return Ok(password);
 }
