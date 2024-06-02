@@ -1,12 +1,13 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io;
+use std::io::Write;
 use std::cmp;
 use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_five_part_one() {
+    match day_five_part_two() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -494,4 +495,58 @@ fn day_five_part_one() -> Result<String, String> {
     }
     
     return Ok(password);
+}
+
+fn day_five_part_two() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day5") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+
+    fn index_to_first_seven_hash(input:String) -> String {
+	let input = input.as_bytes();
+	let out = format!("{:x}",md5::compute(input));
+	let out = (&out[..7]).to_string();
+	return out;
+    }
+
+    let mut i = 0;
+    let mut should_loop = true;
+    let contents = contents;
+    let mut password:Vec<char> = vec!['#'; 8];
+    println!("Start hacking");
+    print!("########");
+    io::stdout().flush().unwrap();
+    
+    let mut written = 0;
+    while should_loop {
+	let mut index = contents.clone();
+	index.push_str(&i.to_string());
+	let result = index_to_first_seven_hash(index);
+	if &result[..5] == "00000" {
+	    let pas_pos = result.chars().nth(5).unwrap();
+	    match pas_pos.to_digit(8) {
+		None => (),
+		Some(n) => {
+		    let existing = password[n as usize];
+		    if existing == '#' {
+			let chosen_char = result.chars().nth(6).unwrap();
+//			println!("{chosen_char}");
+			password[n as usize] = chosen_char;
+			let pass_string:String = password.iter().collect();
+			print!("{}[2K\r", 27 as char);
+			print!("{pass_string}");
+			io::stdout().flush().unwrap();
+			written = written + 1;
+		    }
+		}
+	    }
+	    should_loop = written<8;			  
+	}
+	i = i + 1;
+    }
+    println!("");
+    return Ok(password.iter().collect());
+
 }
