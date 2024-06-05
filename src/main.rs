@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_six_part_one() {
+    match day_six_part_two() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -583,3 +583,37 @@ fn day_six_part_one() -> Result<String, String> {
     }
     return Ok(password);
 }
+
+fn day_six_part_two() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day6") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))	    
+    }
+    let lines:Vec<Vec<char>> = contents.lines().map(|line| line.chars().collect()).collect();
+    let num_letters = lines[0].len();
+
+    let mut count_dict:HashMap<char,i32>;
+    let mut password:String=String::new();
+    
+    for i in 0..num_letters {
+	count_dict = HashMap::new();
+	for l in &lines {
+	    let c:char = l[i];
+	    *count_dict.entry(c).or_insert(0) +=1;	
+	}
+	let counting_vector:Vec<(i32, char)> = count_dict.iter().map(|(a,b)| (*b, *a)).collect();	
+	let mut biggest_num:i32 = i32::MAX;
+	let mut most_common_char='#';
+
+	for (count, letter) in counting_vector {
+	    if count<biggest_num {
+		biggest_num = count;
+		most_common_char = letter;
+	    }
+	}
+	password.push(most_common_char)
+    }
+    return Ok(password);
+}
+
