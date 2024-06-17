@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::fs::File;
 use std::io::prelude::*;
 use std::io;
@@ -7,7 +9,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_six_part_two() {
+    match day_seven_part_one() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -617,3 +619,60 @@ fn day_six_part_two() -> Result<String, String> {
     return Ok(password);
 }
 
+fn day_seven_part_one() -> Result<String, String> {
+    let mut contents = String::new();
+    match File::open("puzzle-input/Day7") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))
+    }
+    let mut num_ips:i32 = 0;
+
+    fn check_palindrome(to_check:Vec<char>) -> bool {
+	let first:char = to_check[0];
+	let second:char = to_check[1];
+	let third:char = to_check[2];
+	let fourth:char = to_check[3];
+
+	return first==fourth && second==third && first!=second;
+    }
+    
+    let lines:Vec<Vec<char>> = contents.lines().map(|line| line.chars().collect()).collect();
+    for line in lines {
+	let mut slide:Vec<char> = vec![];
+	let mut depth = 0;
+
+	let mut abba_outside=false;
+	let mut abba_inside = false;
+	
+	for character in line {
+	    if character =='[' {
+		depth += 1;
+	    } else if character == ']' {
+		depth -= 1;
+	    }
+	    if depth > 1 {
+		println!("Very deep");
+	    }
+	    slide.push(character);
+	    if slide.len() > 4 {
+		slide.remove(0);
+	    }
+	    if slide.len() == 4 {
+		if check_palindrome(slide.clone()) {
+		    if depth == 0 {
+			abba_outside = true;
+		    } else {
+			abba_inside = true;
+		    }
+		}
+	    }
+	}
+	if abba_outside && !abba_inside {
+	    println!("Valid");
+	    num_ips += 1;
+	} else {
+	    println!("Invalid");
+	}
+    }
+    return Ok(format!("{num_ips}"))
+}
