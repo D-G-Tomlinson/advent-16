@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 fn main() -> Result<(), &'static str>{
-    match day_seven_part_one() {
+    match day_seven_part_two() {
 	Ok(s) => println!("{s:?}"),
 	Err(e) => println!("Error in calculation. {e:?}")
     }
@@ -668,6 +668,76 @@ fn day_seven_part_one() -> Result<String, String> {
 	    }
 	}
 	if abba_outside && !abba_inside {
+	    println!("Valid");
+	    num_ips += 1;
+	} else {
+	    println!("Invalid");
+	}
+    }
+    return Ok(format!("{num_ips}"))
+}
+fn day_seven_part_two() -> Result<String, String> {
+let mut contents = String::new();
+    match File::open("puzzle-input/Day7") {
+	Ok(mut f) => _ = f.read_to_string(&mut contents),
+	Err(e) => return Err(format!("Error with file opening. {e:?}"))
+    }
+    let mut num_ips:i32 = 0;
+
+    fn check_palindrome(to_check:Vec<char>) -> bool {
+	let first:char = to_check[0];
+	let second:char = to_check[1];
+	let third:char = to_check[2];
+	
+	return first==third && first!=second && second!='[' && second!=']' && first!='[' && first!=']';
+    }
+    
+    let lines:Vec<Vec<char>> = contents.lines().map(|line| line.chars().collect()).collect();
+    for line in lines {
+	let mut slide:Vec<char> = vec![];
+	let mut depth = 0;
+
+	let mut list_of_abas:Vec<(char,char)> = vec![];
+	let mut list_of_babs:Vec<(char,char)> = vec![];
+	
+	for character in line {
+	    if character =='[' {
+		depth += 1;
+	    } else if character == ']' {
+		depth -= 1;
+	    }
+	    if depth > 1 {
+		println!("Very deep");
+	    }
+	    slide.push(character);
+	    if slide.len() > 3 {
+		slide.remove(0);
+	    }
+	    if slide.len() == 3 {
+		if check_palindrome(slide.clone()) {
+		    if depth == 0 {
+			list_of_abas.push((slide[0],slide[1]));
+		    } else {
+			list_of_babs.push((slide[1],slide[0]));
+		    }
+		}
+	    }
+	}
+
+	fn does_intersect(v1:Vec<(char,char)>, v2:Vec<(char,char)>) -> bool {
+	    for (a,b) in v1 {
+		for (c,d) in &v2 {
+		    if a==*c && b==*d {
+			return true;
+		    } 
+		}
+	    }
+
+	    return false;
+	}
+
+	
+	if does_intersect(list_of_abas,list_of_babs) {
 	    println!("Valid");
 	    num_ips += 1;
 	} else {
